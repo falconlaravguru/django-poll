@@ -5,6 +5,8 @@ from django.db.models import F
 from django.views import generic
 from django.urls import reverse
 from django.utils import timezone
+from rest_framework import viewsets
+from polls.serializers import QuestionSerializer
 
 from .models import Question,Choice
 
@@ -35,6 +37,14 @@ class ResultsView(generic.DetailView):
     model = Question
     template_name = 'polls/results.html'
 
+class QuestionViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows questions to be viewed or edited.
+    """
+    queryset = Question.objects.all().order_by('-pub_date')
+    serializer_class = QuestionSerializer
+
+
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
@@ -48,3 +58,4 @@ def vote(request, question_id):
         selected_choice.votes = F('votes') + 1
         selected_choice.save()
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
+
